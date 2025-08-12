@@ -42,14 +42,6 @@ const formSchema = z.object({
     storageKey: z.string()
   })).optional(),
   additional_terms_text: z.string().max(5000).optional(),
-  notification: z.object({
-    show_in_app: z.boolean().default(true),
-    email: z.union([
-      z.string().email(),
-      z.string().length(0),
-      z.undefined()
-    ]).optional()
-  }).optional(),
   meta: z.object({
     contract_title: z.string().max(200).optional(),
     party_role: z.enum(['buyer', 'seller', 'service_provider', 'client', 'employer', 'employee', 'other']).optional(),
@@ -59,7 +51,6 @@ const formSchema = z.object({
     currency: z.string().regex(/^[A-Z]{3}$/).optional(),
     total_value: z.number().min(0).optional()
   }).optional(),
-  consent_privacy: z.boolean()
 });
 
 interface AnalysisFormProps {
@@ -86,15 +77,10 @@ export function AnalysisForm({ onSubmit }: AnalysisFormProps) {
       language: 'auto',
       report_format: 'detailed',
       analysis_focus: ['unfavorable_terms', 'ambiguity', 'legal_risk'],
-      notification: {
-        show_in_app: true
-      },
-      consent_privacy: false
     }
   });
 
   const selectedFocus = watch('analysis_focus') || [];
-  const consentPrivacy = watch('consent_privacy');
 
   const handleFormSubmit = (data: any) => {
     console.log('Form submitted with data:', data);
@@ -105,16 +91,11 @@ export function AnalysisForm({ onSubmit }: AnalysisFormProps) {
       return;
     }
     
-    // Clean up notification email if empty
-    if (data.notification && data.notification.email === '') {
-      delete data.notification.email;
-    }
     
     const formData: ContractAnalysisRequest = {
       ...data,
       contract_file: contractFile,
       reference_docs: referenceFiles.length > 0 ? referenceFiles : undefined,
-      consent_privacy: true // 자동으로 동의한 것으로 처리
     };
     
     console.log('Submitting analysis with formData:', formData);
@@ -249,23 +230,6 @@ export function AnalysisForm({ onSubmit }: AnalysisFormProps) {
           </RadioGroup>
         </div>
 
-        <div className="mt-4 space-y-2">
-          <label className="flex items-center space-x-2">
-            <Checkbox
-              {...register('notification.show_in_app')}
-              defaultChecked
-            />
-            <span className="text-sm">앱 내 알림 표시</span>
-          </label>
-          <div>
-            <Label htmlFor="email">이메일 알림 (선택)</Label>
-            <Input
-              type="email"
-              placeholder="legal@example.com"
-              {...register('notification.email')}
-            />
-          </div>
-        </div>
       </Card>
 
       {/* 고급 옵션 (선택) */}
@@ -309,39 +273,13 @@ export function AnalysisForm({ onSubmit }: AnalysisFormProps) {
         )}
       </Card>
 
-      {/* 개인정보 처리 동의 */}
-      <Card className="p-6">
-        <div className="flex items-start space-x-2">
-          <Checkbox
-            id="consent_privacy"
-            {...register('consent_privacy')}
-            className="mt-1"
-          />
-          <div className="grid gap-1.5 leading-none">
-            <Label
-              htmlFor="consent_privacy"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              개인정보 처리 동의 (필수)
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              업로드된 계약서는 분석 목적으로만 사용되며, 분석 완료 후 자동으로 삭제됩니다.
-            </p>
-          </div>
-        </div>
-        {errors.consent_privacy && (
-          <p className="text-sm text-red-600 mt-2">
-            개인정보 처리에 동의해주세요.
-          </p>
-        )}
-      </Card>
 
       {/* 제출 버튼 */}
       <div className="flex gap-4">
         <Button
           type="submit"
           size="lg"
-          disabled={!contractFile || !consentPrivacy || isSubmitting}
+          disabled={!contractFile || isSubmitting}
           className="flex-1"
         >
           {isSubmitting ? '분석 중...' : '분석 시작'}

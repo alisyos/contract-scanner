@@ -189,7 +189,7 @@ export function AnalysisResult({ result, onReset }: AnalysisResultProps) {
                 <p className="text-sm text-gray-700 mb-2">{finding.reason}</p>
                 {finding.clause_excerpt && (
                   <div className="bg-gray-50 p-3 rounded text-sm">
-                    <p className="text-gray-600 italic">"{finding.clause_excerpt}"</p>
+                    <p className="text-gray-600 italic">&quot;{finding.clause_excerpt}&quot;</p>
                     {finding.clause_location?.section && (
                       <p className="text-xs text-gray-500 mt-1">
                         위치: {finding.clause_location.section}

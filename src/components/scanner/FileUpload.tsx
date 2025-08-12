@@ -26,6 +26,7 @@ export function FileUpload({
   const [error, setError] = useState<string | null>(null);
 
   const getFileIcon = (mimeType: string) => {
+    {/* eslint-disable-next-line jsx-a11y/alt-text */}
     if (mimeType.includes('image')) return <Image className="w-8 h-8" />;
     if (mimeType.includes('pdf')) return <FileText className="w-8 h-8 text-red-500" />;
     if (mimeType.includes('word')) return <FileText className="w-8 h-8 text-blue-500" />;

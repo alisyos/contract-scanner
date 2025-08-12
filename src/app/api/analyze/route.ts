@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
 import { z } from 'zod';
 import { getActivePrompt } from '@/lib/prompts';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 const requestSchema = z.object({
   contractText: z.string(),
@@ -91,8 +86,14 @@ ${validated.contractText}
 }
 `;
 
+    // Dynamic import of OpenAI to avoid build issues
+    const { default: OpenAI } = await import('openai');
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || 'sk-fake-key-for-build',
+    });
+
     const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4.1',
+      model: process.env.OPENAI_MODEL || 'gpt-4',
       messages: [
         { role: 'system', content: getSystemPrompt() },
         { role: 'user', content: userPrompt }

@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, FileText, Brain, CheckCircle, Clock } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 interface AnalysisModalProps {
   isOpen: boolean;
@@ -13,7 +13,7 @@ export function AnalysisModal({ isOpen, onClose }: AnalysisModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  const steps = [
+  const steps = useMemo(() => [
     {
       id: 1,
       title: '파일 처리 중',
@@ -35,7 +35,7 @@ export function AnalysisModal({ isOpen, onClose }: AnalysisModalProps) {
       icon: CheckCircle,
       duration: 2000
     }
-  ];
+  ], []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -68,7 +68,7 @@ export function AnalysisModal({ isOpen, onClose }: AnalysisModalProps) {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [isOpen]);
+  }, [isOpen, steps]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

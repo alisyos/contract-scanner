@@ -42,9 +42,7 @@ export interface ContractAnalysisRequest {
   report_format: ReportFormat;
   reference_docs?: FileInfo[];
   additional_terms_text?: string;
-  notification?: NotificationSettings;
   meta?: ContractMeta;
-  consent_privacy: boolean;
 }
 
 export interface KeyFinding {

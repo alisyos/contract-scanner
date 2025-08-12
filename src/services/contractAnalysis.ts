@@ -213,44 +213,6 @@ export class ContractAnalysisService {
   }
 
   async analyzeContract(request: ContractAnalysisRequest): Promise<ContractAnalysisResponse> {
-    // Validate consent
-    if (!request.consent_privacy) {
-      return {
-        jobId: '',
-        status: 'error',
-        summary: {
-          risk_score: 0,
-          risk_breakdown: {
-            unfavorable_terms: 0,
-            ambiguity: 0,
-            legal_risk: 0,
-            performance_timeline: 0,
-            termination_liquidated_damages: 0
-          },
-          key_findings: []
-        },
-        report: {
-          format: request.report_format,
-          sections: []
-        },
-        meta: {
-          input_echo: {
-            contract_type: request.contract_type,
-            jurisdiction: request.jurisdiction,
-            language: request.language,
-            analysis_focus: request.analysis_focus,
-            notification: request.notification || { show_in_app: true }
-          },
-          contract_overview: {},
-          disclaimer: ''
-        },
-        errors: [{
-          code: 'NO_CONSENT',
-          message: '개인정보 처리 동의가 필요합니다.'
-        }]
-      };
-    }
-
     try {
       // Extract text from contract file
       const contractText = await extractTextFromFile(request.contract_file);
