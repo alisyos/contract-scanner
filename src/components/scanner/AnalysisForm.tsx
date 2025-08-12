@@ -29,12 +29,12 @@ const formSchema = z.object({
     size: z.number(),
     storageKey: z.string()
   }),
-  contract_type: z.string().default('auto'),
-  analysis_focus: z.array(z.string()).min(1, '최소 1개 이상의 분석 항목을 선택하세요'),
-  analysis_perspective: z.string().default('neutral'),
-  jurisdiction: z.string().default('KR'),
-  language: z.string().default('auto'),
-  report_format: z.string(),
+  contract_type: z.enum(['auto', 'general_sale', 'service', 'real_estate', 'employment', 'nda', 'other']).default('auto'),
+  analysis_focus: z.array(z.enum(['unfavorable_terms', 'ambiguity', 'legal_risk', 'performance_timeline', 'termination_liquidated_damages'])).min(1, '최소 1개 이상의 분석 항목을 선택하세요'),
+  analysis_perspective: z.enum(['neutral', 'party_a', 'party_b', 'buyer', 'seller', 'service_provider', 'client', 'employer', 'employee']).default('neutral'),
+  jurisdiction: z.enum(['KR', 'US', 'EU', 'JP', 'CN', 'OTHERS']).default('KR'),
+  language: z.enum(['auto', 'ko', 'en', 'ja', 'zh']).default('auto'),
+  report_format: z.enum(['brief', 'detailed', 'negotiation_points']),
   reference_docs: z.array(z.object({
     name: z.string(),
     mimeType: z.string(),
@@ -52,13 +52,14 @@ const formSchema = z.object({
   }).optional(),
   meta: z.object({
     contract_title: z.string().max(200).optional(),
-    party_role: z.string().optional(),
+    party_role: z.enum(['buyer', 'seller', 'service_provider', 'client', 'employer', 'employee', 'other']).optional(),
     counterparty_name: z.string().max(200).optional(),
     effective_date: z.string().optional(),
     end_date: z.string().optional(),
     currency: z.string().regex(/^[A-Z]{3}$/).optional(),
     total_value: z.number().min(0).optional()
-  }).optional()
+  }).optional(),
+  consent_privacy: z.boolean()
 });
 
 interface AnalysisFormProps {
@@ -87,11 +88,13 @@ export function AnalysisForm({ onSubmit }: AnalysisFormProps) {
       analysis_focus: ['unfavorable_terms', 'ambiguity', 'legal_risk'],
       notification: {
         show_in_app: true
-      }
+      },
+      consent_privacy: false
     }
   });
 
   const selectedFocus = watch('analysis_focus') || [];
+  const consentPrivacy = watch('consent_privacy');
 
   const handleFormSubmit = (data: any) => {
     console.log('Form submitted with data:', data);
@@ -201,11 +204,11 @@ export function AnalysisForm({ onSubmit }: AnalysisFormProps) {
               {ANALYSIS_FOCUS_OPTIONS.map(option => (
                 <label key={option.value} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={selectedFocus.includes(option.value)}
+                    checked={selectedFocus.includes(option.value as any)}
                     onCheckedChange={(checked) => {
                       const current = watch('analysis_focus') || [];
                       if (checked) {
-                        setValue('analysis_focus', [...current, option.value]);
+                        setValue('analysis_focus', [...current, option.value as any]);
                       } else {
                         setValue('analysis_focus', current.filter(v => v !== option.value));
                       }
@@ -229,7 +232,7 @@ export function AnalysisForm({ onSubmit }: AnalysisFormProps) {
           <Label>보고서 형식 <span className="text-red-500">*</span></Label>
           <RadioGroup
             value={watch('report_format')}
-            onValueChange={(value) => setValue('report_format', value)}
+            onValueChange={(value) => setValue('report_format', value as any)}
             className="mt-2"
           >
             {REPORT_FORMATS.map(format => (
@@ -306,13 +309,39 @@ export function AnalysisForm({ onSubmit }: AnalysisFormProps) {
         )}
       </Card>
 
+      {/* 개인정보 처리 동의 */}
+      <Card className="p-6">
+        <div className="flex items-start space-x-2">
+          <Checkbox
+            id="consent_privacy"
+            {...register('consent_privacy')}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <Label
+              htmlFor="consent_privacy"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              개인정보 처리 동의 (필수)
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              업로드된 계약서는 분석 목적으로만 사용되며, 분석 완료 후 자동으로 삭제됩니다.
+            </p>
+          </div>
+        </div>
+        {errors.consent_privacy && (
+          <p className="text-sm text-red-600 mt-2">
+            개인정보 처리에 동의해주세요.
+          </p>
+        )}
+      </Card>
 
       {/* 제출 버튼 */}
       <div className="flex gap-4">
         <Button
           type="submit"
           size="lg"
-          disabled={!contractFile || isSubmitting}
+          disabled={!contractFile || !consentPrivacy || isSubmitting}
           className="flex-1"
         >
           {isSubmitting ? '분석 중...' : '분석 시작'}

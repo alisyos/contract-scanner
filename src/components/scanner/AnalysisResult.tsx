@@ -186,7 +186,7 @@ export function AnalysisResult({ result, onReset }: AnalysisResultProps) {
                   )}
                 </div>
                 <h4 className="font-medium mb-2">{finding.title}</h4>
-                <p className="text-sm text-gray-700 mb-2">{finding.reason || finding.description}</p>
+                <p className="text-sm text-gray-700 mb-2">{finding.reason}</p>
                 {finding.clause_excerpt && (
                   <div className="bg-gray-50 p-3 rounded text-sm">
                     <p className="text-gray-600 italic">"{finding.clause_excerpt}"</p>
@@ -197,11 +197,6 @@ export function AnalysisResult({ result, onReset }: AnalysisResultProps) {
                       </p>
                     )}
                   </div>
-                )}
-                {finding.recommendation && (
-                  <p className="text-sm text-blue-700 mt-2">
-                    <strong>권장사항:</strong> {finding.recommendation}
-                  </p>
                 )}
               </div>
             ))}
@@ -275,10 +270,10 @@ export function AnalysisResult({ result, onReset }: AnalysisResultProps) {
                   {point.impact && (
                     <p className="text-sm text-gray-700 mb-2">영향: {point.impact}</p>
                   )}
-                  {(point.suggested_rewrite || point.suggestedChange) && (
+                  {point.suggested_rewrite && (
                     <div className="bg-blue-50 p-3 rounded">
                       <p className="text-sm font-medium mb-1">제안 수정안:</p>
-                      <p className="text-sm text-gray-700">{point.suggested_rewrite || point.suggestedChange}</p>
+                      <p className="text-sm text-gray-700">{point.suggested_rewrite}</p>
                     </div>
                   )}
                   {point.rationale && (
